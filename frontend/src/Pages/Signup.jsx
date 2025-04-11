@@ -26,8 +26,8 @@ export default function AuthPage() {
     e.preventDefault();
     try {
       const endpoint = isSignUp
-        ? "http://localhost:5000/user/register"
-        : "http://localhost:5000/user/login";
+        ? "https://edtech-35vd.onrender.com/user/register"
+        : "https://edtech-35vd.onrender.com/user/login";
 
       // Prepare request data
       const requestData = isSignUp
