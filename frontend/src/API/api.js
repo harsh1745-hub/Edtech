@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "http://localhost:5000/study", 
+    baseURL: "https://edtech-35vd.onrender.com", 
     headers: {
       "Content-Type": "application/json",
     },
