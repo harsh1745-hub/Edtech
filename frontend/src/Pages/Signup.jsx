@@ -28,8 +28,8 @@ export default function AuthPage() {
     setIsLoading(true); // Start loading state
     try {
       const endpoint = isSignUp
-        ? "https://edtech-35vd.onrender.com/user/register"
-        : "https://edtech-35vd.onrender.com/user/login";
+        ? "https://edtech-35vd.onrender.com/register"
+        : "https://edtech-35vd.onrender.com/login";
 
       // Prepare request data
       const requestData = isSignUp
