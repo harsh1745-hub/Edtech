@@ -9,6 +9,7 @@ export default function AuthPage() {
     email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false); // Loading state
 
   // Toggle between Sign Up and Login
   const toggleForm = () => {
@@ -24,6 +25,7 @@ export default function AuthPage() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading state
     try {
       const endpoint = isSignUp
         ? "https://edtech-35vd.onrender.com/user/register"
@@ -41,9 +43,11 @@ export default function AuthPage() {
         withCredentials: true, // Allows cookies for authentication
       });
 
+      setIsLoading(false); // Stop loading state
       console.log("✅ Response Data:", response.data);
       alert(response.data.message);
     } catch (error) {
+      setIsLoading(false); // Stop loading state even on error
       console.error("❌ Error:", error.response?.data || error.message);
       alert("Error: " + (error.response?.data?.message || "Something went wrong!"));
     }
@@ -97,8 +101,9 @@ export default function AuthPage() {
           <button
             type="submit"
             className="w-full bg-pink-500 text-white py-3 rounded-lg hover:bg-pink-600 transition"
+            disabled={isLoading} // Disable button while loading
           >
-            {isSignUp ? "Sign Up" : "Log In"}
+            {isLoading ? "Loading..." : isSignUp ? "Sign Up" : "Log In"}
           </button>
         </form>
 
@@ -115,3 +120,4 @@ export default function AuthPage() {
     </div>
   );
 }
+
