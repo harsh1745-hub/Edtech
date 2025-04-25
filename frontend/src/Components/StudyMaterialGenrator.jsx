@@ -30,8 +30,8 @@ const StudyMaterialGenerator = () => {
   };
 
   return (
-    <div className="p-4 border mb-4">
-      <h2 className="text-xl font-bold mb-2">🧠 Generate Study Material</h2>
+    <div className="p-4 border mb-4"> 
+      <h2 className="text-xl font-bold mb-2">Generate Study Material</h2>
 
       <input
         value={title}

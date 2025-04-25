@@ -5,6 +5,7 @@
   "type": "module",
   "proxy": "http://127.0.0.1:5000",
   "scripts": {
+    "postinstall": "chmod +x ./node_modules/.bin/vite",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
