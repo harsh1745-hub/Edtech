@@ -19,46 +19,84 @@ connectDB()
 const app = express()
 
 const allowedOrigins = [
-  'http://localhost:5173',
-  'https://edugen-7bwq.onrender.com',
-  'edtech-kkol-m5bvj3rql-harshs-projects-9c290640.vercel.app',
-  'https://edtech-kkol.vercel.app/'
-]
+  'http://localhost:5173', // Local development
+  'https://edugen-7bwq.onrender.com', // Render frontend
+  'https://edtech-kkol.vercel.app', // Vercel production
+  'https://edtech-kappa-coral.vercel.app', // Vercel deployment from error
+  'https://edtech-kkol-m5bvj3rql-harshs-projects-9c290640.vercel.app' // Vercel deployment URL
+];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin is in the allowed list or matches a pattern
+    if (
+      allowedOrigins.some(allowedOrigin => 
+        origin === allowedOrigin ||
+        origin.startsWith(allowedOrigin.replace('https://', 'http://')) || // HTTP fallback
+      origin.includes(allowedOrigin.replace('https://', '').replace('http://', '')) // Loose match
+    ) {
+      return callback(null, true);
     }
+    
+    console.warn(`⚠️ Blocked by CORS: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200 // Legacy browsers
+};
 
-// 🔥 Always put CORS middleware at the very top
-app.use(cors(corsOptions))
+// Middleware
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Preflight for all routes
+app.use(express.json());
 
-// 🔥 Handle preflight (OPTIONS) requests properly
-app.options('*', cors(corsOptions))
+// Request logging middleware (for debugging)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
 
+// Routes
+app.use('/user', userRoutes);
+app.use('/study', studyRoutes);
+app.use('/video', videoRoutes);
+app.use('/question', tutorRoutes);
+app.use('/learning', learningRoutes);
+app.use('/mock', mockRoutes);
+app.use('/api/performance', performanceRoutes);
+app.use('/assignment', assignmentRoutes);
+app.use('/badge', badgeRoutes);
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date() });
+});
 
-app.use(express.json())
+// 404 Handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
 
-app.use('/user', userRoutes)
-app.use('/study', studyRoutes)
-app.use('/video', videoRoutes)
-app.use('/question', tutorRoutes)
-app.use('/learning', learningRoutes)
-app.use('/mock', mockRoutes)
-app.use('/api/performance', performanceRoutes)
-app.use('/assignment', assignmentRoutes)
-app.use('/badge', badgeRoutes)
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('❌ Error:', err.stack);
+  
+  // Handle CORS errors specifically
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({ error: 'CORS policy blocked this request' });
+  }
+  
+  res.status(500).json({ error: 'Something went wrong!' });
+});
 
-const PORT = process.env.PORT || 5000
+// Server setup
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`)
-})
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🟢 Allowed origins: ${allowedOrigins.join(', ')}`);
+});
