@@ -18,7 +18,7 @@ dotenv.config();
 connectDB();
 app.use(
     cors({
-      origin: "http://localhost:5173", // Your frontend URL
+      origin: "https://edugen-7bwq.onrender.com", // Your frontend URL
       credentials: true, // Allow cookies (JWT)
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
      allowedHeaders: ['Content-Type', 'Authorization']
