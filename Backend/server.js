@@ -32,12 +32,11 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     
     // Check if the origin is in the allowed list or matches a pattern
-    if (
-      allowedOrigins.some(allowedOrigin => 
-        origin === allowedOrigin ||
-        origin.startsWith(allowedOrigin.replace('https://', 'http://')) || // HTTP fallback
-      origin.includes(allowedOrigin.replace('https://', '').replace('http://', '')) // Loose match
-    ) {
+    if (allowedOrigins.some(allowedOrigin => {
+      return origin === allowedOrigin ||
+             origin.startsWith(allowedOrigin.replace('https://', 'http://')) || // HTTP fallback
+             origin.includes(allowedOrigin.replace('https://', '').replace('http://', '')); // Loose match
+    })) {
       return callback(null, true);
     }
     
@@ -54,6 +53,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Preflight for all routes
 app.use(express.json());
+
+// ... rest of your code remains the same ...
 
 // Request logging middleware (for debugging)
 app.use((req, res, next) => {
