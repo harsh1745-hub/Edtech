@@ -22,7 +22,7 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:5000/user/login", formData, {
+      const response = await axios.post("https://edtech-f05f.onrender.com/user/login", formData, {
         withCredentials: true,
       });
 
