@@ -5,34 +5,47 @@ import { genrateVideoSummary } from '../Config/aiService.js';
 
 
 const extractVideoId = (videoUrl) => {
-    const match = videoUrl.match(/(?:v=|\/embed\/|\/v\/|youtu\.be\/|\/shorts\/|\/watch\?v=)([a-zA-Z0-9_-]{11})/);
-    return match ? match[1] : null;
-  };
-  
-  // ✅ Summarize Video Controller
-  export const summarizeVideo = asyncHandler(async (req, res) => {
+  const regex = /(?:v=|\/embed\/|\/v\/|youtu\.be\/|\/shorts\/|\/watch\?v=)([a-zA-Z0-9_-]{11})/;
+  const match = videoUrl.match(regex);
+  return match ? match[1] : null;
+};
+
+// ✅ Controller: Summarize Video
+export const summarizeVideo = asyncHandler(async (req, res) => {
+  try {
     const { userId, videoUrl, title } = req.body;
-  
+
+    // 1. Validation
     if (!userId || !videoUrl || !title) {
       return res.status(400).json({ success: false, message: "Missing required fields: userId, videoUrl, title" });
     }
-  
+
+    // 2. Extract Video ID
     const videoId = extractVideoId(videoUrl);
     if (!videoId) {
       return res.status(400).json({ success: false, message: "Invalid YouTube URL" });
     }
-  
-    // ✅ Fetch Transcript
+
+    console.log(`🎯 Extracted Video ID: ${videoId}`);
+
+    // 3. Fetch Transcript
     const transcript = await getYouTubeTranscript(videoId);
-    if (!transcript) {
-      return res.status(400).json({ success: false, message: "Failed to retrieve transcript" });
+    if (!transcript || transcript.length === 0) {
+      return res.status(400).json({ success: false, message: "Failed to retrieve transcript. Video might not have captions." });
     }
-  
-    // ✅ Generate AI Summary
-    const { summary, flashcards, mindmap } = await genrateVideoSummary(transcript);
-  
-    // ✅ Save to Database
-    const newSummary = new Video({
+
+    console.log(`📜 Transcript fetched successfully. Length: ${transcript.length} characters`);
+
+    // 4. Generate Summary
+    const { summary, flashcards, mindmap } = await generateVideoSummary(transcript);
+    if (!summary) {
+      return res.status(500).json({ success: false, message: "Failed to generate summary from transcript." });
+    }
+
+    console.log(`🧠 AI Summary generated. Preview: ${summary.slice(0, 100)}...`);
+
+    // 5. Save to Database
+    const newSummary = await Video.create({
       userId,
       videoUrl,
       title,
@@ -40,19 +53,34 @@ const extractVideoId = (videoUrl) => {
       flashcards,
       mindmap,
     });
-  
-    await newSummary.save();
+
+    console.log(`💾 New summary saved for userId: ${userId}`);
+
     res.status(201).json({ success: true, summary: newSummary });
-  });
-  
-  // ✅ Get Summaries for a User
-  export const getUserSummaries = asyncHandler(async (req, res) => {
+  } catch (error) {
+    console.error('❌ Error in summarizeVideo:', error.message);
+    res.status(500).json({ success: false, message: "Server Error: " + error.message });
+  }
+});
+
+// ✅ Controller: Get User Summaries
+export const getUserSummaries = asyncHandler(async (req, res) => {
+  try {
     const { userId } = req.params;
-  
+
+    // 1. Validation
     if (!userId) {
       return res.status(400).json({ success: false, message: "User ID is required" });
     }
-  
-    const summaries = await Video.find({ userId });
+
+    // 2. Fetch summaries
+    const summaries = await Video.find({ userId }).sort({ createdAt: -1 }); // Sort: newest first
+
+    console.log(`📚 Found ${summaries.length} summaries for userId: ${userId}`);
+
     res.status(200).json({ success: true, summaries });
-  });
+  } catch (error) {
+    console.error('❌ Error in getUserSummaries:', error.message);
+    res.status(500).json({ success: false, message: "Server Error: " + error.message });
+  }
+});
