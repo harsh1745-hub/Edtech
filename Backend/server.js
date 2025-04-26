@@ -36,9 +36,11 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 }
 
-// ⚡ Place CORS Middleware at top
+// 🔥 Always put CORS middleware at the very top
 app.use(cors(corsOptions))
-app.options('*', cors(corsOptions)) 
+
+// 🔥 Handle preflight (OPTIONS) requests properly
+app.options('*', cors(corsOptions))
 
 
 
