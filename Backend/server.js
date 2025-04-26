@@ -20,7 +20,8 @@ const app = express()
 
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://edugen-7bwq.onrender.com'
+  'https://edugen-7bwq.onrender.com',
+  'edtech-kkol-m5bvj3rql-harshs-projects-9c290640.vercel.app'
 ]
 
 const corsOptions = {
